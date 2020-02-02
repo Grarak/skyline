@@ -13,7 +13,9 @@ namespace skyline::service::hid {
         {0x7A, SFUNC(IHidServer::SetNpadJoyAssignmentModeSingleByDefault)},
         {0x7B, SFUNC(IHidServer::SetNpadJoyAssignmentModeSingle)},
         {0x7C, SFUNC(IHidServer::SetNpadJoyAssignmentModeDual)}
-    }) {}
+    }) {
+        state.input->commonNpad->Activate();
+    }
 
     void IHidServer::CreateAppletResource(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response) {
         resource = std::make_shared<IAppletResource>(state, manager);
@@ -21,9 +23,10 @@ namespace skyline::service::hid {
     }
 
     void IHidServer::SetSupportedNpadStyleSet(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response) {
-        auto styleSet = request.Pop<StyleSet>();
+        auto styleSet = request.Pop<NpadStyleSet>();
         state.logger->Debug("Controller Support:\nPro-Controller: {}\nJoy-Con: Handheld: {}, Dual: {}, L: {}, R: {}\nGameCube: {}\nPokeBall: {}\nNES: {}, NES Handheld: {}, SNES: {}", static_cast<bool>(styleSet.proController), static_cast<bool>(styleSet.joyconHandheld), static_cast<bool>(styleSet.joyconDual), static_cast<bool>(styleSet.joyconLeft), static_cast<bool>
-        (styleSet.joyconRight), static_cast<bool>(styleSet.gamecube), static_cast<bool>(styleSet.pokeball), static_cast<bool>(styleSet.nes), static_cast<bool>(styleSet.nesHandheld), static_cast<bool>(styleSet.snes));
+        (styleSet.joyconRight), static_cast<bool>(styleSet.gamecube), static_cast<bool>(styleSet.palma), static_cast<bool>(styleSet.nes), static_cast<bool>(styleSet.nesHandheld), static_cast<bool>(styleSet.snes));
+        state.input->commonNpad->supportedStyles = styleSet;
     }
 
     void IHidServer::SetSupportedNpadIdType(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response) {
@@ -33,30 +36,29 @@ namespace skyline::service::hid {
 
         for (size_t i = 0; i < numId; i++) {
             auto id = state.process->GetObject<NpadId>(address);
-            deviceMap[id] = JoyConDevice(id);
+            state.input->npad.at(NpadIdToIndex(id))->supported = true;
             address += sizeof(NpadId);
         }
     }
 
-    void IHidServer::ActivateNpad(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response) {}
+    void IHidServer::ActivateNpad(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response) {
+        state.input->commonNpad->Activate();
+    }
 
     void IHidServer::SetNpadJoyHoldType(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response) {
-        deviceMap[request.Pop<NpadId>()].assignment = JoyConAssignment::Single;
+        u64 appletResourceUID = request.Pop<u64>();
+        state.input->commonNpad->orientation = request.Pop<NpadJoyOrientation>();
     }
 
     void IHidServer::SetNpadJoyAssignmentModeSingleByDefault(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response) {
-        orientation = request.Pop<JoyConOrientation>();
+        state.input->npad.at(NpadIdToIndex(request.Pop<NpadId>()))->SetAssignment(NpadJoyAssignment::Single);
     }
 
     void IHidServer::SetNpadJoyAssignmentModeSingle(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response) {
-        auto controllerId = request.Pop<NpadId>();
-        auto appletUserId = request.Pop<u64>();
-
-        deviceMap[controllerId].assignment = JoyConAssignment::Single;
-        deviceMap[controllerId].side = request.Pop<JoyConSide>();
+        state.input->npad.at(NpadIdToIndex(request.Pop<NpadId>()))->SetAssignment(NpadJoyAssignment::Single);
     }
 
     void IHidServer::SetNpadJoyAssignmentModeDual(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response) {
-        deviceMap[request.Pop<NpadId>()].assignment = JoyConAssignment::Dual;
+        state.input->npad.at(NpadIdToIndex(request.Pop<NpadId>()))->SetAssignment(NpadJoyAssignment::Dual);
     }
 }

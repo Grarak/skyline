@@ -365,6 +365,9 @@ namespace skyline {
     namespace loader {
         class Loader;
     }
+    namespace input {
+        class Input;
+    }
 
     /**
      * @brief This struct is used to hold the state of a device
@@ -381,6 +384,7 @@ namespace skyline {
         std::shared_ptr<audio::Audio> audio; //!< This holds a reference to the Audio class
         std::shared_ptr<loader::Loader> loader; //!< This holds a reference to the Loader class
         std::shared_ptr<JvmManager> jvm; //!< This holds a reference to the JvmManager class
+        std::shared_ptr<input::Input> input; //!< This holds a reference to the Input class
         std::shared_ptr<Settings> settings; //!< This holds a reference to the Settings class
         std::shared_ptr<Logger> logger; //!< This holds a reference to the Logger class
     };

@@ -5,6 +5,7 @@
 #include "nce.h"
 #include "gpu.h"
 #include "audio.h"
+#include "input.h"
 #include <kernel/types/KThread.h>
 #include <tinyxml2.h>
 
@@ -154,6 +155,7 @@ namespace skyline {
         nce = std::make_shared<NCE>(*this);
         gpu = std::make_shared<gpu::GPU>(*this);
         audio = std::make_shared<audio::Audio>(*this);
+        input = std::make_shared<input::Input>(*this);
     }
 
     thread_local std::shared_ptr<kernel::type::KThread> DeviceState::thread = nullptr;

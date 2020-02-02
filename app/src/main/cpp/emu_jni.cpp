@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include "skyline/loader/loader.h"
 #include "skyline/common.h"
+#include "skyline/input/common.h"
 #include "skyline/os.h"
 #include "skyline/jvm.h"
 
@@ -12,6 +13,7 @@ bool Halt;
 jobject Surface;
 uint FaultCount;
 skyline::GroupMutex JniMtx;
+std::shared_ptr<skyline::kernel::OS> os;
 skyline::u16 fps;
 skyline::u32 frametime;
 
@@ -47,11 +49,11 @@ extern "C" JNIEXPORT void Java_emu_skyline_EmulationActivity_executeApplication(
     auto start = std::chrono::steady_clock::now();
 
     try {
-        skyline::kernel::OS os(jvmManager, logger, settings);
+        os = std::make_shared<skyline::kernel::OS>(jvmManager, logger, settings);
         auto romUri = env->GetStringUTFChars(romUriJstring, nullptr);
         logger->Info("Launching ROM {}", romUri);
         env->ReleaseStringUTFChars(romUriJstring, romUri);
-        os.Execute(romFd, static_cast<skyline::loader::RomFormat>(romType));
+        os->Execute(romFd, static_cast<skyline::loader::RomFormat>(romType));
     } catch (std::exception &e) {
         logger->Error(e.what());
     } catch (...) {
@@ -86,4 +88,15 @@ extern "C" JNIEXPORT jint Java_emu_skyline_EmulationActivity_getFps(JNIEnv *env,
 
 extern "C" JNIEXPORT jfloat Java_emu_skyline_EmulationActivity_getFrametime(JNIEnv *env, jobject thiz) {
     return static_cast<float>(frametime) / 100;
+}
+
+extern "C" JNIEXPORT void Java_emu_skyline_EmulationActivity_setButtonState(JNIEnv *env, jobject instance, jlong id, jint state) {
+    skyline::input::npad::NpadButton npadButton;
+    npadButton.raw = static_cast<skyline::u64>(id);
+
+    os->input->npad[0]->SetButtonState(npadButton, static_cast<skyline::input::npad::NpadButtonState>(state));
+}
+
+extern "C" JNIEXPORT void Java_emu_skyline_EmulationActivity_setAxisValue(JNIEnv *env, jobject instance, jint id, jint value) {
+    os->input->npad[0]->SetAxisValue(static_cast<skyline::input::npad::NpadAxisId>(id), value);
 }

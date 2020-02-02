@@ -3,11 +3,15 @@
 
 #pragma once
 
+#include <input.h>
 #include <services/base_service.h>
 #include <services/serviceman.h>
 #include "IAppletResource.h"
 
 namespace skyline::service::hid {
+
+    using namespace skyline::input::npad;
+
     /**
      * @brief IHidServer or hid service is used to access input devices (https://switchbrew.org/wiki/HID_services#hid)
      */
@@ -30,22 +34,6 @@ namespace skyline::service::hid {
             u32 _pad0_ : 22;
         };
         static_assert(sizeof(StyleSet) == 4);
-
-        /**
-         * @brief This holds a Controller's ID (https://switchbrew.org/wiki/HID_services#NpadIdType)
-         */
-        enum class NpadId : u32 {
-            Player1 = 0x0, //!< 1st Player
-            Player2 = 0x1, //!< 2nd Player
-            Player3 = 0x2, //!< 3rd Player
-            Player4 = 0x3, //!< 4th Player
-            Player5 = 0x4, //!< 5th Player
-            Player6 = 0x5, //!< 6th Player
-            Player7 = 0x6, //!< 7th Player
-            Player8 = 0x7, //!< 8th Player
-            Unknown = 0x10, //!< Unknown
-            Handheld = 0x20 //!< Handheld mode
-        };
 
         /**
          * @brief This holds a Controller's Assignment mode
@@ -90,9 +78,6 @@ namespace skyline::service::hid {
         };
 
         std::shared_ptr<IAppletResource> resource{}; //!< A shared pointer to the applet resource
-        std::optional<StyleSet> styleSet; //!< The controller styles supported by the application
-        std::unordered_map<NpadId, JoyConDevice> deviceMap; //!< Mapping from a controller's ID to it's corresponding JoyConDevice
-        JoyConOrientation orientation{JoyConOrientation::Unset}; //!< The Orientation of the Joy-Con(s)
 
       public:
         IHidServer(const DeviceState &state, ServiceManager &manager);

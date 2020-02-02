@@ -16,8 +16,12 @@ import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceManager
 import emu.skyline.loader.getRomFormat
+import emu.skyline.utility.ButtonState
+import emu.skyline.utility.NpadAxisId
+import emu.skyline.utility.NpadButton
 import kotlinx.android.synthetic.main.emu_activity.*
 import java.io.File
+import kotlin.math.abs
 
 class EmulationActivity : AppCompatActivity(), SurfaceHolder.Callback {
     init {
@@ -54,6 +58,9 @@ class EmulationActivity : AppCompatActivity(), SurfaceHolder.Callback {
      */
     private lateinit var emulationThread : Thread
 
+    private var controllerHatY: Float = 0.0f
+    private var controllerHatX: Float = 0.0f
+
     /**
      * This is the entry point into the emulation code for libskyline
      *
@@ -88,6 +95,9 @@ class EmulationActivity : AppCompatActivity(), SurfaceHolder.Callback {
      * This returns the current frame-time of the application
      */
     private external fun getFrametime() : Float
+
+    private external fun setButtonState(id: Long, state: Int)
+    private external fun setAxisValue(id: Int, value: Int)
 
     /**
      * This executes the specified ROM, [preferenceFd] and [logFd] are assumed to be valid beforehand
@@ -214,5 +224,99 @@ class EmulationActivity : AppCompatActivity(), SurfaceHolder.Callback {
         Log.d("surfaceDestroyed", "Holder: ${holder.toString()}")
         surface = null
         setSurface(surface)
+    }
+
+    override fun dispatchKeyEvent(event : KeyEvent) : Boolean {
+        val action: ButtonState = when (event.action) {
+            KeyEvent.ACTION_DOWN -> ButtonState.Pressed
+            KeyEvent.ACTION_UP -> ButtonState.Released
+            else -> return false
+        }
+
+        var buttonMap: Map<Int, NpadButton> = mapOf(
+                KeyEvent.KEYCODE_BUTTON_A to NpadButton.A,
+                KeyEvent.KEYCODE_BUTTON_B to NpadButton.B,
+                KeyEvent.KEYCODE_BUTTON_X to NpadButton.X,
+                KeyEvent.KEYCODE_BUTTON_Y to NpadButton.Y,
+                KeyEvent.KEYCODE_BUTTON_THUMBL to NpadButton.L3,
+                KeyEvent.KEYCODE_BUTTON_THUMBR to NpadButton.R3,
+                KeyEvent.KEYCODE_BUTTON_L1 to NpadButton.L,
+                KeyEvent.KEYCODE_BUTTON_R1 to NpadButton.R,
+                KeyEvent.KEYCODE_BUTTON_L2 to NpadButton.ZL,
+                KeyEvent.KEYCODE_BUTTON_R2 to NpadButton.ZR,
+                KeyEvent.KEYCODE_BUTTON_START to NpadButton.Plus,
+                KeyEvent.KEYCODE_BUTTON_SELECT to NpadButton.Minus,
+                KeyEvent.KEYCODE_DPAD_DOWN to NpadButton.DpadDown,
+                KeyEvent.KEYCODE_DPAD_UP to NpadButton.DpadUp,
+                KeyEvent.KEYCODE_DPAD_LEFT to NpadButton.DpadLeft,
+                KeyEvent.KEYCODE_DPAD_RIGHT to NpadButton.DpadRight)
+
+        if (buttonMap.containsKey(event.keyCode)) {
+            setButtonState(buttonMap.getValue(event.keyCode).id, action.ordinal);
+            return true
+        }
+
+        val input: InputDevice = event.device
+        return super.dispatchKeyEvent(event)
+    }
+
+    override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
+        if ((event.source and InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD ||
+                (event.source and InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK)  {
+            var hatXMap: Map<Float, NpadButton> = mapOf(
+                    -1.0f to NpadButton.DpadLeft,
+                    +1.0f to NpadButton.DpadRight)
+
+            var hatYMap: Map<Float, NpadButton> = mapOf(
+                    -1.0f to NpadButton.DpadUp,
+                    +1.0f to NpadButton.DpadDown)
+
+            if (controllerHatX != event.getAxisValue(MotionEvent.AXIS_HAT_X)) {
+                if (event.getAxisValue(MotionEvent.AXIS_HAT_X) == 0.0f)
+                    setButtonState(hatXMap.getValue(controllerHatX).id, ButtonState.Released.ordinal)
+                else
+                    setButtonState(hatXMap.getValue(event.getAxisValue(MotionEvent.AXIS_HAT_X)).id, ButtonState.Pressed.ordinal)
+
+                controllerHatX = event.getAxisValue(MotionEvent.AXIS_HAT_X)
+
+                return true
+            }
+
+            if (controllerHatY != event.getAxisValue(MotionEvent.AXIS_HAT_Y)) {
+                if (event.getAxisValue(MotionEvent.AXIS_HAT_Y) == 0.0f)
+                    setButtonState(hatYMap.getValue(controllerHatY).id, ButtonState.Released.ordinal)
+                else
+                    setButtonState(hatYMap.getValue(event.getAxisValue(MotionEvent.AXIS_HAT_Y)).id, ButtonState.Pressed.ordinal)
+
+                controllerHatY = event.getAxisValue(MotionEvent.AXIS_HAT_Y)
+
+                return true
+            }
+        }
+
+        if ((event.source and InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK && event.action == MotionEvent.ACTION_MOVE) {
+            var axisMap: Map<Int, NpadAxisId> = mapOf(
+                    MotionEvent.AXIS_X to NpadAxisId.LX,
+                    MotionEvent.AXIS_Y to NpadAxisId.LY,
+                    MotionEvent.AXIS_Z to NpadAxisId.RX,
+                    MotionEvent.AXIS_RZ to NpadAxisId.RY)
+
+            //TODO: Digital inputs based off of analog sticks
+            event.device.motionRanges.forEach {
+                if (axisMap.containsKey(it.axis)) {
+                    var axisValue: Float = event.getAxisValue(it.axis)
+                    if (abs(axisValue) <= it.flat)
+                        axisValue = 0.0f
+
+                    val ratio : Float = axisValue / (it.max - it.min)
+                    val rangedAxisValue: Int = (ratio * (Short.MAX_VALUE - Short.MIN_VALUE)).toInt()
+
+                    setAxisValue(axisMap.getValue(it.axis).ordinal, rangedAxisValue)
+                }
+            }
+            return true
+        }
+
+        return super.dispatchGenericMotionEvent(event)
     }
 }
