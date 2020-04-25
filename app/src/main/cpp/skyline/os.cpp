@@ -5,10 +5,18 @@
 #include "loader/nro.h"
 #include "nce/guest.h"
 
+extern skyline::Input *input;
+
 using namespace skyline::kernel;
 
 namespace skyline {
-    OS::OS(std::shared_ptr<JvmManager> &jvmManager, std::shared_ptr<Logger> &logger, std::shared_ptr<Settings> &settings) : state(this, process, jvmManager, settings, logger), memory(state), serviceManager(state) {}
+    OS::OS(std::shared_ptr<JvmManager> &jvmManager, std::shared_ptr<Logger> &logger, std::shared_ptr<Settings> &settings) : state(this, process, jvmManager, settings, logger), memory(state), serviceManager(state) {
+        input = state.input.get();
+    }
+
+    OS::~OS() {
+        input = nullptr;
+    }
 
     void OS::Execute(int romFd, TitleFormat romType) {
         std::shared_ptr<loader::Loader> loader;

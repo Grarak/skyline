@@ -33,6 +33,11 @@ namespace skyline {
         OS(std::shared_ptr<JvmManager> &jvmManager, std::shared_ptr<Logger> &logger, std::shared_ptr<Settings> &settings);
 
         /**
+         * @brief The destructor for OS
+         */
+        ~OS();
+
+        /**
          * @brief Execute a particular ROM file. This launches the main process and calls the NCE class to handle execution.
          * @param romFd A FD to the ROM file to execute
          * @param romType The type of the ROM file
@@ -53,13 +58,5 @@ namespace skyline {
          * @param pid The PID of the thread
          */
         void KillThread(pid_t pid);
-
-        /**
-         * @return A pointer to the input::Input class
-         * @note This is used to retrieve the Input class for the JNI side of things to pass inputs
-         */
-        Input* GetInput() {
-            return state.input.get();
-        }
     };
 }

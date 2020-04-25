@@ -48,13 +48,11 @@ extern "C" JNIEXPORT void Java_emu_skyline_EmulationActivity_executeApplication(
     auto start = std::chrono::steady_clock::now();
 
     try {
-        skyline::OS os(jvmManager, logger, settings);
-        input = os.GetInput();
-
         auto romUri = env->GetStringUTFChars(romUriJstring, nullptr);
         logger->Info("Launching ROM {}", romUri);
         env->ReleaseStringUTFChars(romUriJstring, romUri);
 
+        skyline::OS os(jvmManager, logger, settings);
         os.Execute(romFd, static_cast<skyline::TitleFormat>(romType));
     } catch (std::exception &e) {
         logger->Error(e.what());
@@ -94,10 +92,13 @@ extern "C" JNIEXPORT jfloat Java_emu_skyline_EmulationActivity_getFrametime(JNIE
 }
 
 extern "C" JNIEXPORT void JNICALL Java_emu_skyline_EmulationActivity_setButtonState(JNIEnv *, jobject, jlong id, jint state) {
-    skyline::input::npad::NpadButton button{.raw = static_cast<skyline::u64>(id)};
-    input->npad[0]->SetButtonState(button, static_cast<skyline::input::npad::NpadButtonState>(state));
+    if (input) {
+        skyline::input::npad::NpadButton button{.raw = static_cast<skyline::u64>(id)};
+        input->npad[0]->SetButtonState(button, static_cast<skyline::input::npad::NpadButtonState>(state));
+    }
 }
 
 extern "C" JNIEXPORT void JNICALL Java_emu_skyline_EmulationActivity_setAxisValue(JNIEnv *, jobject, jint id, jint value) {
-    input->npad[0]->SetAxisValue(static_cast<skyline::input::npad::NpadAxisId>(id), value);
+    if (input)
+        input->npad[0]->SetAxisValue(static_cast<skyline::input::npad::NpadAxisId>(id), value);
 }
