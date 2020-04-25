@@ -5,7 +5,9 @@
 #include "loader/nro.h"
 #include "nce/guest.h"
 
-namespace skyline::kernel {
+using namespace skyline::kernel;
+
+namespace skyline {
     OS::OS(std::shared_ptr<JvmManager> &jvmManager, std::shared_ptr<Logger> &logger, std::shared_ptr<Settings> &settings) : state(this, process, jvmManager, settings, logger), memory(state), serviceManager(state) {}
 
     void OS::Execute(int romFd, TitleFormat romType) {

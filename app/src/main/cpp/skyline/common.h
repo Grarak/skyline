@@ -357,36 +357,34 @@ namespace skyline {
     };
 
     class NCE;
-    class JvmManager;
-    namespace gpu {
-        class GPU;
-    }
+    class OS;
     namespace kernel {
         namespace type {
             class KProcess;
             class KThread;
         }
-        class OS;
     }
-    namespace audio {
-        class Audio;
-    }
+    class JvmManager;
+    class GPU;
+    class Audio;
+    class Input;
 
     /**
      * @brief This struct is used to hold the state of a device
      */
     struct DeviceState {
-        DeviceState(kernel::OS *os, std::shared_ptr<kernel::type::KProcess> &process, std::shared_ptr<JvmManager> jvmManager, std::shared_ptr<Settings> settings, std::shared_ptr<Logger> logger);
+        DeviceState(OS *os, std::shared_ptr<kernel::type::KProcess> &process, std::shared_ptr<JvmManager> jvmManager, std::shared_ptr<Settings> settings, std::shared_ptr<Logger> logger);
 
-        kernel::OS *os; //!< This holds a reference to the OS class
-        std::shared_ptr<kernel::type::KProcess> &process; //!< This holds a reference to the process object
-        thread_local static std::shared_ptr<kernel::type::KThread> thread; //!< This holds a reference to the current thread object
         thread_local static ThreadContext *ctx; //!< This holds the context of the thread
-        std::shared_ptr<NCE> nce; //!< This holds a reference to the NCE class
-        std::shared_ptr<gpu::GPU> gpu; //!< This holds a reference to the GPU class
-        std::shared_ptr<audio::Audio> audio; //!< This holds a reference to the Audio class
-        std::shared_ptr<JvmManager> jvm; //!< This holds a reference to the JvmManager class
-        std::shared_ptr<Settings> settings; //!< This holds a reference to the Settings class
-        std::shared_ptr<Logger> logger; //!< This holds a reference to the Logger class
+        thread_local static std::shared_ptr<kernel::type::KThread> thread; //!< This holds a shared_ptr to the current thread object
+        std::shared_ptr<kernel::type::KProcess> &process; //!< This holds a reference to a shared_ptr of the process object
+        OS *os; //!< This holds a pointer to the OS class
+        std::shared_ptr<NCE> nce; //!< This holds a shared_ptr to the NCE class
+        std::shared_ptr<Logger> logger; //!< This holds a shared_ptr to the Logger class
+        std::shared_ptr<Settings> settings; //!< This holds a shared_ptr to the Settings class
+        std::shared_ptr<JvmManager> jvm; //!< This holds a shared_ptr to the JvmManager class
+        std::shared_ptr<GPU> gpu; //!< This holds a shared_ptr to the GPU class
+        std::shared_ptr<Audio> audio; //!< This holds a shared_ptr to the Audio class
+        std::shared_ptr<Input> input; //!< This holds a shared_ptr to the Input class
     };
 }

@@ -10,7 +10,7 @@
 #include <audio/track.h>
 #include "common.h"
 
-namespace skyline::audio {
+namespace skyline {
     /**
      * @brief The Audio class is used to mix audio from all tracks
      */
@@ -32,13 +32,13 @@ namespace skyline::audio {
          * @param releaseCallback The callback to call when a buffer has been released
          * @return A shared pointer to a new AudioTrack object
          */
-        std::shared_ptr<AudioTrack> OpenTrack(u8 channelCount, u32 sampleRate, const std::function<void()> &releaseCallback);
+        std::shared_ptr<audio::AudioTrack> OpenTrack(u8 channelCount, u32 sampleRate, const std::function<void()> &releaseCallback);
 
         /**
          * @brief Closes a track and frees its data
          * @param track The track to close
          */
-        void CloseTrack(std::shared_ptr<AudioTrack> &track);
+        void CloseTrack(std::shared_ptr<audio::AudioTrack> &track);
 
         /**
          * @brief The callback oboe uses to get audio sample data

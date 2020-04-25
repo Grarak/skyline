@@ -11,7 +11,9 @@ extern jobject Surface;
 extern skyline::u16 fps;
 extern skyline::u32 frametime;
 
-namespace skyline::gpu {
+using namespace skyline::gpu;
+
+namespace skyline {
     GPU::GPU(const DeviceState &state) : state(state), window(ANativeWindow_fromSurface(state.jvm->GetEnv(), Surface)), vsyncEvent(std::make_shared<kernel::type::KEvent>(state)), bufferEvent(std::make_shared<kernel::type::KEvent>(state)) {
         ANativeWindow_acquire(window);
         resolution.width = static_cast<u32>(ANativeWindow_getWidth(window));

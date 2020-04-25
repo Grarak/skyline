@@ -10,7 +10,7 @@
 #include <services/nvdrv/devices/nvmap.h>
 #include "gpu/texture.h"
 
-namespace skyline::gpu {
+namespace skyline {
     /**
      * @brief This is used to converge all of the interfaces to the GPU and send the results to a GPU API
      * @note We opted for just supporting a single layer and display as it's what basically all games use and wasting cycles on it is pointless
@@ -23,8 +23,8 @@ namespace skyline::gpu {
         u64 frameTimestamp{}; //!< The timestamp of the last frame being shown
 
       public:
-        std::queue<std::shared_ptr<PresentationTexture>> presentationQueue; //!< A queue of all the PresentationTextures to be posted to the display
-        texture::Dimensions resolution{}; //!< The resolution of the surface
+        std::queue<std::shared_ptr<gpu::PresentationTexture>> presentationQueue; //!< A queue of all the PresentationTextures to be posted to the display
+        gpu::texture::Dimensions resolution{}; //!< The resolution of the surface
         i32 format{}; //!< The format of the display window
         std::shared_ptr<kernel::type::KEvent> vsyncEvent; //!< This KEvent is triggered every time a frame is drawn
         std::shared_ptr<kernel::type::KEvent> bufferEvent; //!< This KEvent is triggered every time a buffer is freed

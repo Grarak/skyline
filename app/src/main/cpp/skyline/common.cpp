@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MPL-2.0
 // Copyright © 2020 Skyline Team and Contributors (https://github.com/skyline-emu/)
 
+#include <tinyxml2.h>
+#include <kernel/types/KThread.h>
 #include "common.h"
 #include "nce.h"
 #include "gpu.h"
 #include "audio.h"
-#include <kernel/types/KThread.h>
-#include <tinyxml2.h>
+#include "input.h"
 
 namespace skyline {
     void Mutex::lock() {
@@ -148,12 +149,13 @@ namespace skyline {
         logFile << "1|" << levelStr[static_cast<u8>(level)] << "|" << str << "\n";
     }
 
-    DeviceState::DeviceState(kernel::OS *os, std::shared_ptr<kernel::type::KProcess> &process, std::shared_ptr<JvmManager> jvmManager, std::shared_ptr<Settings> settings, std::shared_ptr<Logger> logger)
+    DeviceState::DeviceState(OS *os, std::shared_ptr<kernel::type::KProcess> &process, std::shared_ptr<JvmManager> jvmManager, std::shared_ptr<Settings> settings, std::shared_ptr<Logger> logger)
         : os(os), jvm(std::move(jvmManager)), settings(std::move(settings)), logger(std::move(logger)), process(process) {
         // We assign these later as they use the state in their constructor and we don't want null pointers
         nce = std::move(std::make_shared<NCE>(*this));
-        gpu = std::move(std::make_shared<gpu::GPU>(*this));
-        audio = std::move(std::make_shared<audio::Audio>(*this));
+        gpu = std::move(std::make_shared<GPU>(*this));
+        audio = std::move(std::make_shared<Audio>(*this));
+        input = std::move(std::make_shared<Input>(*this));
     }
 
     thread_local std::shared_ptr<kernel::type::KThread> DeviceState::thread = nullptr;

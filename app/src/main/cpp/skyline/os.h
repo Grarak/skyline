@@ -12,7 +12,7 @@
 #include "services/serviceman.h"
 #include "gpu.h"
 
-namespace skyline::kernel {
+namespace skyline {
     /**
      * @brief The OS class manages the interaction between Skyline components and the underlying OS in NCE
      */
@@ -21,9 +21,9 @@ namespace skyline::kernel {
         DeviceState state; //!< The state of the device
 
       public:
-        std::shared_ptr<type::KProcess> process; //!< The KProcess object for the emulator, representing the guest process
+        std::shared_ptr<kernel::type::KProcess> process; //!< The KProcess object for the emulator, representing the guest process
         service::ServiceManager serviceManager; //!< This manages all of the service functions
-        MemoryManager memory; //!< The MemoryManager object for this process
+        kernel::MemoryManager memory; //!< The MemoryManager object for this process
 
         /**
          * @param logger An instance of the Logger class
@@ -46,12 +46,20 @@ namespace skyline::kernel {
          * @param stackSize The size of the main stack
          * @return An instance of the KProcess of the created process
          */
-        std::shared_ptr<type::KProcess> CreateProcess(u64 entry, u64 argument, size_t stackSize);
+        std::shared_ptr<kernel::type::KProcess> CreateProcess(u64 entry, u64 argument, size_t stackSize);
 
         /**
          * @brief Kill a particular thread
          * @param pid The PID of the thread
          */
         void KillThread(pid_t pid);
+
+        /**
+         * @return A pointer to the input::Input class
+         * @note This is used to retrieve the Input class for the JNI side of things to pass inputs
+         */
+        Input* GetInput() {
+            return state.input.get();
+        }
     };
 }
