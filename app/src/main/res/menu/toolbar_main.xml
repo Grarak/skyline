@@ -3,6 +3,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
             android:id="@+id/action_search_main"
+            android:focusable="true"
             android:icon="@drawable/ic_search"
             android:iconTint="@color/colorOnPrimary"
             android:title="@string/search"
@@ -10,11 +11,13 @@
             app:showAsAction="ifRoom|withText" />
     <item
             android:id="@+id/action_settings"
+            android:focusable="true"
             android:icon="@drawable/ic_settings"
             android:title="@string/settings"
             app:showAsAction="ifRoom" />
     <item
             android:id="@+id/action_refresh"
+            android:focusable="true"
             android:icon="@drawable/ic_refresh"
             android:title="@string/refresh"
             app:showAsAction="ifRoom" />

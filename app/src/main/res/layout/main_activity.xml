@@ -19,14 +19,43 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
-            android:layout_margin="16dp"
             android:orientation="vertical">
+
+        <LinearLayout
+                android:id="@+id/controller_fabs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:translationX="72dp"
+                android:visibility="gone">
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/refresh_fab"
+                    style="@style/Widget.MaterialComponents.FloatingActionButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="8dp"
+                    app:maxImageSize="26dp"
+                    app:srcCompat="@drawable/ic_refresh" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/settings_fab"
+                    style="@style/Widget.MaterialComponents.FloatingActionButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="8dp"
+                    app:maxImageSize="26dp"
+                    app:srcCompat="@drawable/ic_settings" />
+        </LinearLayout>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/open_fab"
                 style="@style/Widget.MaterialComponents.FloatingActionButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
                 android:layout_marginBottom="8dp"
                 app:maxImageSize="26dp"
                 app:srcCompat="@drawable/ic_open" />
@@ -36,6 +65,8 @@
                 style="@style/Widget.MaterialComponents.FloatingActionButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="8dp"
                 app:maxImageSize="26dp"
                 app:srcCompat="@drawable/ic_log" />
     </LinearLayout>
