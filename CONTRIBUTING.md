@@ -215,7 +215,7 @@ We should also mention that this isn't promoting the usage of `const`, it's use 
 * Local Variable: `camelCase` 
 * Member Variables: `camelCase`
 * Global Variables: `PascalCase`
-* Functions: `PascalCase`
+* Functions: `camelCase`
 * Parameters: `camelCase`
 * Generics: `PascalCase`
 * Files: `PascalCase`
