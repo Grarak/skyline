@@ -16,13 +16,12 @@ import java.io.*
 import java.util.*
 import kotlin.collections.ArrayList
 
-
 /**
  * An enumeration of the type of elements in this adapter
  */
-enum class ElementType(val type : Int) {
-    Header(0x0),
-    Item(0x1)
+enum class ElementType {
+    Header,
+    Item,
 }
 
 /**
@@ -42,7 +41,9 @@ abstract class BaseItem : BaseElement(ElementType.Item) {
     /**
      * This function returns a string used for searching
      */
-    abstract fun key() : String?
+    open fun key() : String? {
+        return null
+    }
 }
 
 /**
@@ -140,7 +141,7 @@ abstract class HeaderAdapter<ItemType : BaseItem?, HeaderType : BaseHeader?, Vie
      * @param position The position of the element
      */
     override fun getItemViewType(position : Int) : Int {
-        return elementArray[visibleArray[position]]!!.elementType.type
+        return elementArray[visibleArray[position]]!!.elementType.ordinal
     }
 
     /**
@@ -204,8 +205,12 @@ abstract class HeaderAdapter<ItemType : BaseItem?, HeaderType : BaseHeader?, Vie
                         val item = elementArray[index]!!
 
                         if (item is BaseItem) {
-                            keyIndex.append(keyArray.size, index)
-                            keyArray.add(item.key()!!.toLowerCase(Locale.getDefault()))
+                            val key = item.key()
+
+                            if (key != null) {
+                                keyIndex.append(keyArray.size, index)
+                                keyArray.add(key.toLowerCase(Locale.getDefault()))
+                            }
                         }
                     }
 

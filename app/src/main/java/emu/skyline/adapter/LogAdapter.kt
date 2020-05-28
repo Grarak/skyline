@@ -110,21 +110,17 @@ internal class LogAdapter internal constructor(val context : Context, val compac
     }
 
     /**
-     * This function binds the item at [position] to the supplied [viewHolder]
+     * This function binds the item at [position] to the supplied [holder]
      */
-    override fun onBindViewHolder(viewHolder : RecyclerView.ViewHolder, position : Int) {
+    override fun onBindViewHolder(holder : RecyclerView.ViewHolder, position : Int) {
         val item = getItem(position)
 
-        if (item is LogItem) {
-            val holder = viewHolder as ItemViewHolder
-
+        if (item is LogItem && holder is ItemViewHolder) {
             holder.title.text = item.message
             holder.subtitle?.text = item.level
 
             holder.parent.tag = item
-        } else if (item is BaseHeader) {
-            val holder = viewHolder as HeaderViewHolder
-
+        } else if (item is BaseHeader && holder is HeaderViewHolder) {
             holder.header.text = item.title
         }
     }

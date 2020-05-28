@@ -169,14 +169,12 @@ internal class AppAdapter(val context : Context?, private val layoutType : Layou
     }
 
     /**
-     * This function binds the item at [position] to the supplied [viewHolder]
+     * This function binds the item at [position] to the supplied [holder]
      */
-    override fun onBindViewHolder(viewHolder : RecyclerView.ViewHolder, position : Int) {
+    override fun onBindViewHolder(holder : RecyclerView.ViewHolder, position : Int) {
         val item = getItem(position)
 
-        if (item is AppItem) {
-            val holder = viewHolder as ItemViewHolder
-
+        if (item is AppItem && holder is ItemViewHolder) {
             holder.title.text = item.title
             holder.subtitle.text = item.subTitle ?: missingString
 
@@ -189,9 +187,7 @@ internal class AppAdapter(val context : Context?, private val layoutType : Layou
 
             holder.card?.tag = item
             holder.parent.tag = item
-        } else if (item is BaseHeader) {
-            val holder = viewHolder as HeaderViewHolder
-
+        } else if (item is BaseHeader && holder is HeaderViewHolder) {
             holder.header!!.text = item.title
         }
     }
