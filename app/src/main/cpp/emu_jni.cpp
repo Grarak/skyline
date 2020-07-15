@@ -13,7 +13,7 @@ bool Halt;
 jobject Surface;
 uint FaultCount;
 skyline::GroupMutex JniMtx;
-std::shared_ptr<skyline::kernel::OS> os;
+std::unique_ptr<skyline::kernel::OS> os;
 skyline::u16 fps;
 skyline::u32 frametime;
 
@@ -49,7 +49,7 @@ extern "C" JNIEXPORT void Java_emu_skyline_EmulationActivity_executeApplication(
     auto start = std::chrono::steady_clock::now();
 
     try {
-        os = std::make_shared<skyline::kernel::OS>(jvmManager, logger, settings);
+        os = std::make_unique<skyline::kernel::OS>(jvmManager, logger, settings);
         auto romUri = env->GetStringUTFChars(romUriJstring, nullptr);
         logger->Info("Launching ROM {}", romUri);
         env->ReleaseStringUTFChars(romUriJstring, romUri);
@@ -61,6 +61,7 @@ extern "C" JNIEXPORT void Java_emu_skyline_EmulationActivity_executeApplication(
     }
     logger->Info("Emulation has ended");
 
+    os.reset();
     auto end = std::chrono::steady_clock::now();
     logger->Info("Done in: {} ms", (std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()));
 }
