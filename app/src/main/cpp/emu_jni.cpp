@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include "skyline/loader/loader.h"
 #include "skyline/common.h"
-#include "skyline/input/common.h"
+#include "input/common.h"
 #include "skyline/os.h"
 #include "skyline/jvm.h"
 

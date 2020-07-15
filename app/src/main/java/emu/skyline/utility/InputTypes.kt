@@ -32,7 +32,7 @@ enum class NpadButton(val id:Long) {
     Touch(1 shl 28)
 }
 
-enum class NpadAxisId() {
+enum class NpadAxisId {
     RX,
     RY,
     LX,

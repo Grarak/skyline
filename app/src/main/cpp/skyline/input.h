@@ -19,6 +19,5 @@ namespace skyline::input {
         std::array<std::shared_ptr<npad::NpadDevice>, npad::constant::NpadCount> npad; //!< Array of npad devices
 
         std::shared_ptr<kernel::type::KSharedMemory> hidKMem; //!< The shared memory reserved for HID input
-        HidSharedMemory *hidMem; //!< A pointer to the root of HID shared memory
     };
 }

@@ -3,14 +3,12 @@
 
 #pragma once
 
+#include <input.h>
 #include <kernel/types/KProcess.h>
 #include <services/base_service.h>
 #include <services/serviceman.h>
 
 namespace skyline {
-    namespace constant {
-        constexpr auto HidSharedMemSize = 0x40000; //!< The size of HID Shared Memory (https://switchbrew.org/wiki/HID_Shared_Memory)
-    }
 
     namespace service::hid {
         /**

@@ -102,6 +102,8 @@ namespace skyline::service::hid {
          */
         void ActivateNpad(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response);
 
+        void ActivateNpadWithRevision(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response);
+
         /**
          * @brief Sets the Joy-Con hold mode (https://switchbrew.org/wiki/HID_services#SetNpadJoyHoldType)
          */

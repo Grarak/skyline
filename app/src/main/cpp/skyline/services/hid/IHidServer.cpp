@@ -9,6 +9,7 @@ namespace skyline::service::hid {
         {0x64, SFUNC(IHidServer::SetSupportedNpadStyleSet)},
         {0x66, SFUNC(IHidServer::SetSupportedNpadIdType)},
         {0x67, SFUNC(IHidServer::ActivateNpad)},
+        {0x6D, SFUNC(IHidServer::ActivateNpadWithRevision)},
         {0x78, SFUNC(IHidServer::SetNpadJoyHoldType)},
         {0x7A, SFUNC(IHidServer::SetNpadJoyAssignmentModeSingleByDefault)},
         {0x7B, SFUNC(IHidServer::SetNpadJoyAssignmentModeSingle)},
@@ -42,6 +43,11 @@ namespace skyline::service::hid {
     }
 
     void IHidServer::ActivateNpad(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response) {
+        state.input->commonNpad->Activate();
+        response.Push(0);
+    }
+
+    void IHidServer::ActivateNpadWithRevision(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response) {
         state.input->commonNpad->Activate();
     }
 

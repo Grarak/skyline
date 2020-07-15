@@ -233,7 +233,7 @@ class EmulationActivity : AppCompatActivity(), SurfaceHolder.Callback {
             else -> return false
         }
 
-        var buttonMap: Map<Int, NpadButton> = mapOf(
+        val buttonMap: Map<Int, NpadButton> = mapOf(
                 KeyEvent.KEYCODE_BUTTON_A to NpadButton.A,
                 KeyEvent.KEYCODE_BUTTON_B to NpadButton.B,
                 KeyEvent.KEYCODE_BUTTON_X to NpadButton.X,
@@ -252,22 +252,21 @@ class EmulationActivity : AppCompatActivity(), SurfaceHolder.Callback {
                 KeyEvent.KEYCODE_DPAD_RIGHT to NpadButton.DpadRight)
 
         if (buttonMap.containsKey(event.keyCode)) {
-            setButtonState(buttonMap.getValue(event.keyCode).id, action.ordinal);
+            setButtonState(buttonMap.getValue(event.keyCode).id, action.ordinal)
             return true
         }
 
-        val input: InputDevice = event.device
         return super.dispatchKeyEvent(event)
     }
 
     override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
         if ((event.source and InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD ||
                 (event.source and InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK)  {
-            var hatXMap: Map<Float, NpadButton> = mapOf(
+            val hatXMap: Map<Float, NpadButton> = mapOf(
                     -1.0f to NpadButton.DpadLeft,
                     +1.0f to NpadButton.DpadRight)
 
-            var hatYMap: Map<Float, NpadButton> = mapOf(
+            val hatYMap: Map<Float, NpadButton> = mapOf(
                     -1.0f to NpadButton.DpadUp,
                     +1.0f to NpadButton.DpadDown)
 
@@ -295,7 +294,7 @@ class EmulationActivity : AppCompatActivity(), SurfaceHolder.Callback {
         }
 
         if ((event.source and InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK && event.action == MotionEvent.ACTION_MOVE) {
-            var axisMap: Map<Int, NpadAxisId> = mapOf(
+            val axisMap: Map<Int, NpadAxisId> = mapOf(
                     MotionEvent.AXIS_X to NpadAxisId.LX,
                     MotionEvent.AXIS_Y to NpadAxisId.LY,
                     MotionEvent.AXIS_Z to NpadAxisId.RX,
