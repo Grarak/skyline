@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // Copyright © 2020 Skyline Team and Contributors (https://github.com/skyline-emu/)
 
+#include "IActiveVibrationDeviceList.h"
 #include "IHidServer.h"
 
 namespace skyline::service::hid {
@@ -13,20 +14,21 @@ namespace skyline::service::hid {
         {0x78, SFUNC(IHidServer::SetNpadJoyHoldType)},
         {0x7A, SFUNC(IHidServer::SetNpadJoyAssignmentModeSingleByDefault)},
         {0x7B, SFUNC(IHidServer::SetNpadJoyAssignmentModeSingle)},
-        {0x7C, SFUNC(IHidServer::SetNpadJoyAssignmentModeDual)}
+        {0x7C, SFUNC(IHidServer::SetNpadJoyAssignmentModeDual)},
+        {0xCB, SFUNC(IHidServer::CreateActiveVibrationDeviceList)},
+        {0xCE, SFUNC(IHidServer::SendVibrationValues)}
     }) {
         state.input->commonNpad->Activate();
     }
 
     void IHidServer::CreateAppletResource(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response) {
-        resource = std::make_shared<IAppletResource>(state, manager);
-        manager.RegisterService(resource, session, response);
+        manager.RegisterService(SRVREG(IAppletResource), session, response);
     }
 
     void IHidServer::SetSupportedNpadStyleSet(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response) {
         auto styleSet = request.Pop<NpadStyleSet>();
         state.logger->Debug("Controller Support:\nPro-Controller: {}\nJoy-Con: Handheld: {}, Dual: {}, L: {}, R: {}\nGameCube: {}\nPokeBall: {}\nNES: {}, NES Handheld: {}, SNES: {}", static_cast<bool>(styleSet.proController), static_cast<bool>(styleSet.joyconHandheld), static_cast<bool>(styleSet.joyconDual), static_cast<bool>(styleSet.joyconLeft), static_cast<bool>
-        (styleSet.joyconRight), static_cast<bool>(styleSet.gamecube), static_cast<bool>(styleSet.palma), static_cast<bool>(styleSet.nes), static_cast<bool>(styleSet.nesHandheld), static_cast<bool>(styleSet.snes));
+        (styleSet.joyconRight), static_cast<bool>(styleSet.gamecube), static_cast<bool>(styleSet.pokeball), static_cast<bool>(styleSet.nes), static_cast<bool>(styleSet.nesHandheld), static_cast<bool>(styleSet.snes));
         state.input->commonNpad->supportedStyles = styleSet;
     }
 
@@ -52,7 +54,7 @@ namespace skyline::service::hid {
     }
 
     void IHidServer::SetNpadJoyHoldType(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response) {
-        u64 appletResourceUID = request.Pop<u64>();
+        request.Pop<u64>(); // appletResourceUserId
         state.input->commonNpad->orientation = request.Pop<NpadJoyOrientation>();
     }
 
@@ -66,5 +68,19 @@ namespace skyline::service::hid {
 
     void IHidServer::SetNpadJoyAssignmentModeDual(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response) {
         state.input->npad.at(NpadIdToIndex(request.Pop<NpadId>()))->SetAssignment(NpadJoyAssignment::Dual);
+    }
+
+    void IHidServer::CreateActiveVibrationDeviceList(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response) {
+        manager.RegisterService(SRVREG(IActiveVibrationDeviceList), session, response);
+    }
+
+    void IHidServer::SendVibrationValues(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response) {
+        request.Pop<u64>(); // appletResourceUserId
+
+        auto valuesPtr = reinterpret_cast<NpadVibrationValue *>(request.inputBuf.at(1).address);
+        // Just take the first vibration value
+        // Usually there are two for left and right joycon
+        NpadVibrationValue &value = valuesPtr[0];
+        state.input->commonNpad->Vibrate(value.freqHigh != 0 || value.freqLow != 0);
     }
 }

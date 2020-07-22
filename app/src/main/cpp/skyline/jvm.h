@@ -15,6 +15,7 @@ namespace skyline {
         JavaVM *vm{}; //!< A pointer to the Java VM
         jobject instance; //!< A reference to the activity
         jclass instanceClass; //!< The class of the activity
+        jmethodID handleVibrationId; //!< A reference to the handleVibration method
 
         /**
          * @param env A pointer to the JNI environment
@@ -36,6 +37,8 @@ namespace skyline {
          * @brief Returns a pointer to the JNI environment for the current thread
          */
         JNIEnv *GetEnv();
+
+        void HandleVibration(bool vibrate);
 
         /**
          * @brief Retrieves a specific field of the given type from the activity

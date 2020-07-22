@@ -93,6 +93,7 @@ namespace skyline {
                 if (Halt)
                     break;
 
+                state.input->commonNpad->HandleVibration();
                 state.gpu->Loop();
             }
         } catch (const std::exception &e) {

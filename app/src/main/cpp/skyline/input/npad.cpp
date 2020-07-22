@@ -1,5 +1,11 @@
-#include "npad.h"
+// SPDX-License-Identifier: MPL-2.0
+// Copyright © 2020 Skyline Team and Contributors (https://github.com/skyline-emu/)
+
 #include <input.h>
+#include <jvm.h>
+#include "npad.h"
+
+extern skyline::GroupMutex JniMtx;
 
 namespace skyline::input::npad {
     u32 NpadIdToIndex(NpadId id) {

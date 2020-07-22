@@ -6,7 +6,7 @@
 thread_local JNIEnv *env;
 
 namespace skyline {
-    JvmManager::JvmManager(JNIEnv *environ, jobject instance) : instance(instance), instanceClass(reinterpret_cast<jclass>(environ->NewGlobalRef(environ->GetObjectClass(instance)))) {
+    JvmManager::JvmManager(JNIEnv *environ, jobject instance) : instance(instance), instanceClass(reinterpret_cast<jclass>(environ->NewGlobalRef(environ->GetObjectClass(instance)))), handleVibrationId(environ->GetMethodID(instanceClass, "handleVibration", "(Z)V")) {
         env = environ;
         if (env->GetJavaVM(&vm) < 0)
             throw exception("Cannot get JavaVM from environment");
@@ -24,6 +24,10 @@ namespace skyline {
 
     JNIEnv *JvmManager::GetEnv() {
         return env;
+    }
+
+    void JvmManager::HandleVibration(bool vibrate) {
+        env->CallVoidMethod(instance, handleVibrationId, vibrate);
     }
 
     jobject JvmManager::GetField(const char *key, const char *signature) {

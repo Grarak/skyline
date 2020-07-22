@@ -6,11 +6,10 @@
 package emu.skyline
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
-import android.os.Bundle
-import android.os.ParcelFileDescriptor
+import android.os.*
 import android.util.Log
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
@@ -21,6 +20,7 @@ import emu.skyline.utility.NpadAxisId
 import emu.skyline.utility.NpadButton
 import kotlinx.android.synthetic.main.emu_activity.*
 import java.io.File
+import java.lang.ref.WeakReference
 import kotlin.math.abs
 
 class EmulationActivity : AppCompatActivity(), SurfaceHolder.Callback {
@@ -46,6 +46,7 @@ class EmulationActivity : AppCompatActivity(), SurfaceHolder.Callback {
     /**
      * The surface object used for displaying frames
      */
+    @Volatile
     private var surface : Surface? = null
 
     /**
@@ -58,8 +59,10 @@ class EmulationActivity : AppCompatActivity(), SurfaceHolder.Callback {
      */
     private lateinit var emulationThread : Thread
 
-    private var controllerHatY: Float = 0.0f
-    private var controllerHatX: Float = 0.0f
+    private var controllerHatY : Float = 0.0f
+    private var controllerHatX : Float = 0.0f
+
+    private lateinit var vibrator : Vibrator
 
     /**
      * This is the entry point into the emulation code for libskyline
@@ -96,8 +99,8 @@ class EmulationActivity : AppCompatActivity(), SurfaceHolder.Callback {
      */
     private external fun getFrametime() : Float
 
-    private external fun setButtonState(id: Long, state: Int)
-    private external fun setAxisValue(id: Int, value: Int)
+    private external fun setButtonState(id : Long, state : Int)
+    private external fun setAxisValue(id : Int, value : Int)
 
     /**
      * This executes the specified ROM, [preferenceFd] and [logFd] are assumed to be valid beforehand
@@ -164,6 +167,8 @@ class EmulationActivity : AppCompatActivity(), SurfaceHolder.Callback {
             perf_stats.postDelayed(perfRunnable, 250)
         }
 
+        vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+
         executeApplication(intent.data!!)
     }
 
@@ -205,7 +210,7 @@ class EmulationActivity : AppCompatActivity(), SurfaceHolder.Callback {
      * This sets [surface] to [holder].surface and passes it into libskyline
      */
     override fun surfaceCreated(holder : SurfaceHolder) {
-        Log.d("surfaceCreated", "Holder: ${holder.toString()}")
+        Log.d("surfaceCreated", "Holder: $holder")
         surface = holder.surface
         setSurface(surface)
     }
@@ -214,26 +219,27 @@ class EmulationActivity : AppCompatActivity(), SurfaceHolder.Callback {
      * This is purely used for debugging surface changes
      */
     override fun surfaceChanged(holder : SurfaceHolder, format : Int, width : Int, height : Int) {
-        Log.d("surfaceChanged", "Holder: ${holder.toString()}, Format: $format, Width: $width, Height: $height")
+        Log.d("surfaceChanged", "Holder: $holder, Format: $format, Width: $width, Height: $height")
     }
 
     /**
      * This sets [surface] to null and passes it into libskyline
      */
     override fun surfaceDestroyed(holder : SurfaceHolder) {
-        Log.d("surfaceDestroyed", "Holder: ${holder.toString()}")
+        Log.d("surfaceDestroyed", "Holder: $holder")
         surface = null
         setSurface(surface)
     }
 
     override fun dispatchKeyEvent(event : KeyEvent) : Boolean {
-        val action: ButtonState = when (event.action) {
+        val action : ButtonState = when (event.action) {
             KeyEvent.ACTION_DOWN -> ButtonState.Pressed
             KeyEvent.ACTION_UP -> ButtonState.Released
             else -> return false
         }
 
-        val buttonMap: Map<Int, NpadButton> = mapOf(
+        val buttonMap : Map<Int, NpadButton> = mapOf(
+                KeyEvent.KEYCODE_VOLUME_UP to NpadButton.R,
                 KeyEvent.KEYCODE_BUTTON_A to NpadButton.A,
                 KeyEvent.KEYCODE_BUTTON_B to NpadButton.B,
                 KeyEvent.KEYCODE_BUTTON_X to NpadButton.X,
@@ -259,14 +265,14 @@ class EmulationActivity : AppCompatActivity(), SurfaceHolder.Callback {
         return super.dispatchKeyEvent(event)
     }
 
-    override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
+    override fun dispatchGenericMotionEvent(event : MotionEvent) : Boolean {
         if ((event.source and InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD ||
-                (event.source and InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK)  {
-            val hatXMap: Map<Float, NpadButton> = mapOf(
+                (event.source and InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK) {
+            val hatXMap : Map<Float, NpadButton> = mapOf(
                     -1.0f to NpadButton.DpadLeft,
                     +1.0f to NpadButton.DpadRight)
 
-            val hatYMap: Map<Float, NpadButton> = mapOf(
+            val hatYMap : Map<Float, NpadButton> = mapOf(
                     -1.0f to NpadButton.DpadUp,
                     +1.0f to NpadButton.DpadDown)
 
@@ -294,7 +300,7 @@ class EmulationActivity : AppCompatActivity(), SurfaceHolder.Callback {
         }
 
         if ((event.source and InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK && event.action == MotionEvent.ACTION_MOVE) {
-            val axisMap: Map<Int, NpadAxisId> = mapOf(
+            val axisMap : Map<Int, NpadAxisId> = mapOf(
                     MotionEvent.AXIS_X to NpadAxisId.LX,
                     MotionEvent.AXIS_Y to NpadAxisId.LY,
                     MotionEvent.AXIS_Z to NpadAxisId.RX,
@@ -303,12 +309,12 @@ class EmulationActivity : AppCompatActivity(), SurfaceHolder.Callback {
             //TODO: Digital inputs based off of analog sticks
             event.device.motionRanges.forEach {
                 if (axisMap.containsKey(it.axis)) {
-                    var axisValue: Float = event.getAxisValue(it.axis)
+                    var axisValue : Float = event.getAxisValue(it.axis)
                     if (abs(axisValue) <= it.flat)
                         axisValue = 0.0f
 
                     val ratio : Float = axisValue / (it.max - it.min)
-                    val rangedAxisValue: Int = (ratio * (Short.MAX_VALUE - Short.MIN_VALUE)).toInt()
+                    val rangedAxisValue : Int = (ratio * (Short.MAX_VALUE - Short.MIN_VALUE)).toInt()
 
                     setAxisValue(axisMap.getValue(it.axis).ordinal, rangedAxisValue)
                 }
@@ -317,5 +323,12 @@ class EmulationActivity : AppCompatActivity(), SurfaceHolder.Callback {
         }
 
         return super.dispatchGenericMotionEvent(event)
+    }
+
+    fun handleVibration(vibrate : Boolean) {
+        vibrator.cancel()
+        if (vibrate) {
+            vibrator.vibrate(VibrationEffect.createWaveform(longArrayOf(1), intArrayOf(1), 0)) // 0 repeats the vibration indefinitely
+        }
     }
 }

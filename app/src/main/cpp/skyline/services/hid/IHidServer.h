@@ -16,69 +16,6 @@ namespace skyline::service::hid {
      * @brief IHidServer or hid service is used to access input devices (https://switchbrew.org/wiki/HID_services#hid)
      */
     class IHidServer : public BaseService {
-      private:
-        /**
-         * @brief This holds the controller styles supported by an application
-         */
-        struct StyleSet {
-            bool proController : 1; //!< The Pro Controller
-            bool joyconHandheld : 1; //!< Joy-Cons in handheld mode
-            bool joyconDual : 1; //!< Joy-Cons in a pair
-            bool joyconLeft : 1; //!< Left Joy-Con only
-            bool joyconRight : 1; //!< Right Joy-Con only
-            bool gamecube : 1; //!< GameCube controller
-            bool pokeball : 1;  //!< Poké Ball Plus controller
-            bool nes : 1; //!< NES controller
-            bool nesHandheld : 1; //!< NES controller in handheld mode
-            bool snes : 1; //!< SNES controller
-            u32 _pad0_ : 22;
-        };
-        static_assert(sizeof(StyleSet) == 4);
-
-        /**
-         * @brief This holds a Controller's Assignment mode
-         */
-        enum class JoyConAssignment {
-            Dual, //!< Dual Joy-Cons
-            Single, //!< Single Joy-Con
-            Unset //!< Not set
-        };
-
-        /**
-         * @brief This holds which Joy-Con to use Single mode (Not if SetNpadJoyAssignmentModeSingleByDefault is used)
-         */
-        enum class JoyConSide : i64 {
-            Left, //!< Left Joy-Con
-            Right, //!< Right Joy-Con
-            Unset //!< Not set
-        };
-
-        /**
-         * @brief This denotes the orientation of the Joy-Con(s)
-         */
-        enum class JoyConOrientation : u64 {
-            Vertical, //!< The Joy-Con is held vertically
-            Horizontal, //!< The Joy-Con is held horizontally
-            Unset //!< Not set
-        };
-
-        // TODO: Replace JoyConDevice with base NpadDevice class
-
-        /**
-         * @brief This holds the state of a single Npad device
-         */
-        struct JoyConDevice {
-            NpadId id; //!< The ID of this device
-            JoyConAssignment assignment{JoyConAssignment::Unset}; //!< The assignment mode of this device
-            JoyConSide side{JoyConSide::Unset}; //!< The type of the device
-
-            JoyConDevice() : id(NpadId::Unknown) {}
-
-            JoyConDevice(const NpadId &id) : id(id) {}
-        };
-
-        std::shared_ptr<IAppletResource> resource{}; //!< A shared pointer to the applet resource
-
       public:
         IHidServer(const DeviceState &state, ServiceManager &manager);
 
@@ -123,5 +60,13 @@ namespace skyline::service::hid {
          * @brief Sets the Joy-Con assignment mode to Dual (https://switchbrew.org/wiki/HID_services#SetNpadJoyAssignmentModeDual)
          */
         void SetNpadJoyAssignmentModeDual(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response);
+
+        /**
+         * @brief This returns an IActiveVibrationDeviceList.
+         * @url https://switchbrew.org/wiki/HID_services#CreateActiveVibrationDeviceList
+         */
+        void CreateActiveVibrationDeviceList(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response);
+
+        void SendVibrationValues(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response);
     };
 }

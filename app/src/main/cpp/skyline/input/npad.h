@@ -1,5 +1,9 @@
+// SPDX-License-Identifier: MPL-2.0
+// Copyright © 2020 Skyline Team and Contributors (https://github.com/skyline-emu/)
+
 #pragma once
 
+#include <jvm.h>
 #include "sharedmem.h"
 
 namespace skyline::input::npad {
@@ -67,10 +71,11 @@ namespace skyline::input::npad {
             bool joyconLeft : 1; //!< Left Joy-Con only
             bool joyconRight : 1; //!< Right Joy-Con only
             bool gamecube : 1; //!< GameCube controller
-            bool palma : 1;  //!< Poké Ball Plus controller
+            bool pokeball : 1;  //!< Poké Ball Plus controller
             bool nes : 1; //!< NES controller
             bool nesHandheld : 1; //!< NES controller in handheld mode
             bool snes : 1; //!< SNES controller
+            u32 _pad0_ : 22;
         };
         u32 raw;
     };
@@ -296,6 +301,14 @@ namespace skyline::input::npad {
     };
     static_assert(sizeof(NpadSection) == 0x5000);
 
+    struct NpadVibrationValue {
+        float ampLow;   //!< Low Band amplitude. 1.0f: Max amplitude.
+        float freqLow;  //!< Low Band frequency in Hz.
+        float ampHigh;  //!< High Band amplitude. 1.0f: Max amplitude.
+        float freqHigh; //!< High Band frequency in Hz.
+    };
+    static_assert(sizeof(NpadVibrationValue) == 0x10);
+
     /**
      * @brief Converts the ID of an npad to the index in shared memory
      * @param id The ID of an npad
@@ -377,6 +390,8 @@ namespace skyline::input::npad {
     class CommonNpad {
       private:
         const DeviceState &state; //!< The state of the device
+        bool vibrationActive = false;
+        bool invokeJvm = false;
 
       public:
         NpadStyleSet supportedStyles{}; //!< The supported style sets
@@ -388,5 +403,19 @@ namespace skyline::input::npad {
          * @brief Activates npad support
          */
         void Activate();
+
+        inline void Vibrate(bool active) {
+            if (vibrationActive != active) {
+                vibrationActive = active;
+                invokeJvm = true;
+            }
+        }
+
+        inline void HandleVibration() {
+            if (invokeJvm) {
+                state.jvm->HandleVibration(vibrationActive);
+                invokeJvm = false;
+            }
+        }
     };
 }

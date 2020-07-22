@@ -15,7 +15,7 @@ namespace skyline::input {
       public:
         Input(const DeviceState &state);
 
-        std::shared_ptr<npad::CommonNpad> commonNpad; //!< The common npad device
+        std::unique_ptr<npad::CommonNpad> commonNpad; //!< The common npad device
         std::array<std::shared_ptr<npad::NpadDevice>, npad::constant::NpadCount> npad; //!< Array of npad devices
 
         std::shared_ptr<kernel::type::KSharedMemory> hidKMem; //!< The shared memory reserved for HID input
